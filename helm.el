@@ -3028,7 +3028,8 @@ It is meant to use with `filter-one-by-one' slot."
   (let* ((pair (and (consp candidate) candidate))
          (display (helm-stringify (if pair (car pair) candidate)))
          (real (cdr pair))
-
+         (mp (helm-aif (helm-attr 'match-part (helm-get-current-source))
+                    (funcall it display)))
          (highlight-once
           ;; Highlight first occurrence from RE in point.
           ;; Returns nil if not found.
@@ -3054,11 +3055,10 @@ It is meant to use with `filter-one-by-one' slot."
       (insert (propertize display 'read-only nil)) ; Fix (#1176)
 
       ;; FIXME This is called at each turn, cache it to optimize.
-      (helm-aif (helm-aif (helm-attr 'match-part (helm-get-current-source))
-                    (funcall it display))
+      (when mp
           (progn
             (goto-char (point-max))
-            (when (search-backward it nil t)
+            (when (search-backward mp nil t)
               (setq mp-suffix (delete-and-extract-region (match-end 0) (point-max))
                     mp-prefix (delete-and-extract-region (point-min) (match-beginning 0))))))
 
